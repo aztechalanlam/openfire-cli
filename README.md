@@ -19,6 +19,10 @@ This scripts provide:
 * cd to e.g. `/usr/src/`
 * clone this repo
     * `git clone https://github.com/lgg/openfire-cli && cd openfire-cli`
+* edit `of-cli-uapi`
+    * change apiKey for your REST API AUTH key
+    * change apiPort if needed
+    * change apiHost if needed
 * copy scripts to `/usr/sbin/`
     * `sudo cp ./of-cli /usr/sbin/ && sudo cp ./of-cli-uapi /usr/sbin/`
 * add execution rights
