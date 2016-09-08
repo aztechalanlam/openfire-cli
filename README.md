@@ -43,7 +43,7 @@ This scripts provide:
 
 * `of-cli-uapi get USERNAME`
     * e.g. `of-cli-uapi get admin`
-* if user exists return `true` if not return `false`
+* if user exists return `true`, if not exist, return `false`
 
 ### add user
 
@@ -56,6 +56,12 @@ This scripts provide:
 * `of-cli-uapi delete USERNAME`
     * e.g. `of-cli-uapi delete bobby`
 * delete user with provided username
+
+## ToDo
+
+* add #"email":"$" to reg data
+* add header response code checks
+* add check for right api key
 
 ## License
 
