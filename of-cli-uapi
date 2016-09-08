@@ -14,7 +14,7 @@ apiKey="YOURAPIKEYHERE"
 ## Internal vars
 
 ofUsage="command usage: ./of-cli-uapi ACTION USERNAME PASSWORD"
-ofActions="ACTIONS: get/list/add/delete"
+ofActions="ACTIONS: list/get/add/delete"
 
 ## Check given arguments
 if [ -z "$1" ]; then
