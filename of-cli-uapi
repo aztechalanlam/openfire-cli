@@ -42,22 +42,31 @@ fi
 ## functions
 function getUser {
     apiUrl="https://$apiHost:$apiPort/plugins/restapi/v1/users/$apiUser"
-    userExist=$(curl -ks -H "Authorization: $apiKey" -H "Accept: application/json" -H "Content-Type: application/json" -X GET "$apiUrl" | jq '.' | jq {username} | jq '.[] != null')
+    userExist=$(curl -sk -H "Authorization: $apiKey" -H "Accept: application/json" -H "Content-Type: application/json" -X GET "$apiUrl" | jq '.' | jq {username} | jq '.[] != null')
     echo $userExist
 }
 
 function addUser {
     apiUrl="https://$apiHost:$apiPort/plugins/restapi/v1/users/"
-    #@TODO: add #"email":"$" to reg data
     apiPostData=$(jq -n --arg u "$apiUser" --arg p "$apiPass" '{"username": $u, "password": $p}')
-    userResult=$(curl -ks -H "Authorization: $apiKey" -H "Accept: application/json" -H "Content-Type: application/json" -d "$apiPostData" -X POST "$apiUrl")
-    echo userResult
+    userResult=$(curl -sk -H "Authorization: $apiKey" -H "Accept: application/json" -H "Content-Type: application/json" -d "$apiPostData" -X POST "$apiUrl" | jq '.' | jq {exception} | jq '.[] == "UserAlreadyExistsException"')
+    if [ "$userResult" = "true" ]
+    then
+        echo "User already registered"
+    else
+        echo "Done, also APIKEY maybe wrong"
+    fi
 }
 
 function deleteUser {
     apiUrl="https://$apiHost:$apiPort/plugins/restapi/v1/users/$apiUser"
-    userResult=$(curl -ks -H "Authorization: $apiKey" -H "Accept: application/json" -H "Content-Type: application/json" -X DELETE "$apiUrl")
-    echo userResult
+    userResult=$(curl -sk -H "Authorization: $apiKey" -H "Accept: application/json" -H "Content-Type: application/json" -X DELETE "$apiUrl" | jq '.' | jq {exception} | jq '.[] == "UserNotFoundException"')
+    if [ "$userResult" = "true" ]
+        then
+            echo "No user with this username. Didn't delete."
+        else
+            echo "Done, also APIKEY maybe wrong"
+        fi
 }
 
 ## get and execute action
