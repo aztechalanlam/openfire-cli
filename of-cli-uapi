@@ -48,7 +48,7 @@ function getUser {
 
 function addUser {
     apiUrl="https://$apiHost:$apiPort/plugins/restapi/v1/users/"
-    apiPostData='{"username":"$apiUser","password":"$apiPass"}' #"email":"$"
+    #@TODO: add #"email":"$" to reg data
     apiPostData=$(jq -n --arg u "$apiUser" --arg p "$apiPass" '{"username": $u, "password": $p}')
     userResult=$(curl -ks -H "Authorization: $apiKey" -H "Accept: application/json" -H "Content-Type: application/json" -d "$apiPostData" -X POST "$apiUrl")
     echo userResult
