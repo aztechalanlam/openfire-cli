@@ -5,8 +5,8 @@ Some simple command line utilities for [OpenFire](https://www.igniterealtime.org
 ## About
 
 This scripts provide:
-* simple start/stop/restart/status interface
-* check if user exist/add/delete user interface
+* simple `start/stop/restart/status` command line interface
+* `list registered users/check if user exist/add/delete` command line interface
     * only if [REST API plugin](https://www.igniterealtime.org/projects/openfire/plugins/restapi/readme.html) installed
     
 ## Installation
@@ -35,9 +35,14 @@ This scripts provide:
     * commands: start/status/stop/restart/force-reload
 * `of-cli-uapi get admin`
     * usage: `of-cli-uapi ACTION USERNAME PASSWORD`
-    * actions: get/add/delete
+    * actions: list/get/add/delete
 
 ## of-cli-uapi
+
+### list users
+
+* `of-cli-uapi list`
+* lists all registered users
 
 ### get user
 
