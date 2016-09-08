@@ -11,25 +11,30 @@ apiPort="9091"
 apiHost="localhost"
 apiKey="YOURAPIKEYHERE"
 
+## Internal vars
+
+ofUsage="command usage: ./of-cli-uapi ACTION USERNAME PASSWORD"
+ofActions="ACTIONS: get/list/add/delete"
+
 ## Check given arguments
 if [ -z "$1" ]; then
     echo "ERR: no ACTION specified"
-    echo "command usage: ./of-cli-uapi ACTION USERNAME PASSWORD"
-    echo "ACTIONS: get/add/delete"
+    echo "$ofUsage"
+    echo "$ofActions"
     exit 1
 else
     apiAction="$1"
 fi
-if [ -z "$2" ]; then
+if [[ "$apiAction" != "list" && -z "$2" ]]; then
     echo "ERR: no USERNAME specified"
-    echo "command usage: ./of-cli-uapi ACTION USERNAME PASSWORD"
+    echo "$ofUsage"
     exit 1
 else
     apiUser="$2"
 fi
 if [[ "$apiAction" = "add" && -z "$3" ]]; then
     echo "ERR: no PASSWORD specified"
-    echo "command usage: ./of-cli-uapi ACTION USERNAME PASSWORD"
+    echo "$ofUsage"
     exit 1
 else
     apiPass="$3"
@@ -44,6 +49,11 @@ function getUser {
     apiUrl="https://$apiHost:$apiPort/plugins/restapi/v1/users/$apiUser"
     userExist=$(curl -sk -H "Authorization: $apiKey" -H "Accept: application/json" -H "Content-Type: application/json" -X GET "$apiUrl" | jq '.' | jq {username} | jq '.[] != null')
     echo $userExist
+}
+
+function listUsers {
+    apiUrl="https://$apiHost:$apiPort/plugins/restapi/v1/users/"
+    (curl -sk -H "Authorization: $apiKey" -H "Accept: application/json" -H "Content-Type: application/json" -X GET "$apiUrl" | jq -r '.user' | jq -r '.[].username')
 }
 
 function addUser {
@@ -73,6 +83,9 @@ function deleteUser {
 if [ "$apiAction" = "get" ]
 then
     getUser
+elif [ "$apiAction" = "list" ]
+then
+    listUsers
 elif [ "$apiAction" = "add" ]
 then
     addUser
@@ -81,8 +94,8 @@ then
     deleteUser
 else
     echo "ERR: wrong ACTION"
-    echo "command usage: ./of-cli-uapi ACTION USERNAME PASSWORD"
-    echo "ACTIONS: get/add/delete"
+    echo "$ofUsage"
+    echo "$ofActions"
     exit 1
 fi
 
