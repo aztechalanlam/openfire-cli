@@ -1,0 +1,79 @@
+#!/bin/bash
+
+# 2016 lgg https://github.com/lgg/openfire-cli
+# needed jq 1.4 (apt install jq)
+# https://stedolan.github.io/jq/tutorial/
+
+# usage ./of-cli-uapi ACTION USERNAME PASSWORD
+
+## Define this variables
+apiPort="9091"
+apiKey="debe0f12005dd2d782f7f2ca010c50ca9e0c9c53991582e12a76779bb2d37f8c"
+
+## Check given arguments
+if [ -z "$1" ]; then
+    echo "ERR: no ACTION specified"
+    echo "command usage: ./of-cli-uapi ACTION USERNAME PASSWORD"
+    echo "ACTIONS: get/add/delete"
+    exit 1
+else
+    apiAction="$1"
+fi
+if [ -z "$2" ]; then
+    echo "ERR: no USERNAME specified"
+    echo "command usage: ./of-cli-uapi ACTION USERNAME PASSWORD"
+    exit 1
+else
+    apiUser="$2"
+fi
+if [[ "$apiAction" = "add" && -z "$3" ]]; then
+    echo "ERR: no PASSWORD specified"
+    echo "command usage: ./of-cli-uapi ACTION USERNAME PASSWORD"
+    exit 1
+else
+    apiPass="$3"
+fi
+
+## curl help:
+# -k = --insecure = allow self-signed certificates
+# -s = --silent = hide curl output (table with speed, downloaded, etc)
+
+## functions
+function getUser {
+    apiUrl="https://localhost:$apiPort/plugins/restapi/v1/users/$apiUser"
+    userExist=$(curl -ks -H "Authorization: $apiKey" -H "Accept: application/json" -H "Content-Type: application/json" -X GET "$apiUrl" | jq '.' | jq {username} | jq '.[] != null')
+    echo $userExist
+}
+
+function addUser {
+    apiUrl="https://localhost:$apiPort/plugins/restapi/v1/users/"
+    apiPostData='{"username":"$apiUser","password":"$apiPass"}' #"email":"$"
+    apiPostData=$(jq -n --arg u "$apiUser" --arg p "$apiPass" '{"username": $u, "password": $p}')
+    userResult=$(curl -ks -H "Authorization: $apiKey" -H "Accept: application/json" -H "Content-Type: application/json" -d "$apiPostData" -X POST "$apiUrl")
+    echo userResult
+}
+
+function deleteUser {
+    apiUrl="https://localhost:$apiPort/plugins/restapi/v1/users/$apiUser"
+    userResult=$(curl -ks -H "Authorization: $apiKey" -H "Accept: application/json" -H "Content-Type: application/json" -X DELETE "$apiUrl")
+    echo userResult
+}
+
+## get and execute action
+if [ "$apiAction" = "get" ]
+then
+    getUser
+elif [ "$apiAction" = "add" ]
+then
+    addUser
+elif [ "$apiAction" = "delete" ]
+then
+    deleteUser
+else
+    echo "ERR: wrong ACTION"
+    echo "command usage: ./of-cli-uapi ACTION USERNAME PASSWORD"
+    echo "ACTIONS: get/add/delete"
+    exit 1
+fi
+
+

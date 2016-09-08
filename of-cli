@@ -1,0 +1,38 @@
+#!/bin/bash
+
+# 2016 lgg https://github.com/lgg/openfire-cli
+
+pathOpenFire="/opt/openfire/bin/openfire"
+usageExample="command usage: ./of-cli ACTION"
+usageActions="ACTIONS: start/status/stop/restart/force-reload"
+
+if [ -z "$1" ]; then
+    echo "ERR: no ACTION given"
+    echo "$usageExample"
+    echo "$usageActions"
+    exit 1
+else
+    action="$1"
+fi
+
+if [ "$action" = "start" ]
+then
+    (cd $pathOpenFire start)
+elif [ "$action" = "status" ]
+then
+    ($pathOpenFire status)
+elif [ "$action" = "stop" ]
+then
+    ($pathOpenFire stop)
+elif [ "$action" = "restart" ]
+then
+    ($pathOpenFire restart)
+elif [ "$action" = "force-reload" ]
+then
+    ($pathOpenFire force-reload)
+else
+    echo "ERR: wrong ACTION"
+    echo "$usageExample"
+        echo "$usageActions"
+    exit 1
+fi
