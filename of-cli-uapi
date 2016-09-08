@@ -53,7 +53,15 @@ function getUser {
 
 function listUsers {
     apiUrl="https://$apiHost:$apiPort/plugins/restapi/v1/users/"
-    (curl -sk -H "Authorization: $apiKey" -H "Accept: application/json" -H "Content-Type: application/json" -X GET "$apiUrl" | jq -r '.user' | jq -r '.[].username')
+    users=$(curl -sk -H "Authorization: $apiKey" -H "Accept: application/json" -H "Content-Type: application/json" -X GET "$apiUrl" | jq -r '.user' | jq -r '.[].username')
+    if [ -z "$users" ]; then
+        echo "ERR: wrong API AUTH KEY"
+        exit 1
+    else
+        arrUsers=($users)
+        echo "OpenFire registered users: "
+        for i in ${arrUsers[@]}; do echo $i; done
+    fi
 }
 
 function addUser {
