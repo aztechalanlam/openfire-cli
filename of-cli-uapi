@@ -98,5 +98,3 @@ else
     echo "$ofActions"
     exit 1
 fi
-
-
