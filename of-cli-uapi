@@ -2,13 +2,14 @@
 
 # 2016 lgg https://github.com/lgg/openfire-cli
 # needed jq 1.4 (apt install jq)
-# https://stedolan.github.io/jq/tutorial/
+# https://stedolan.github.io/jq/
 
 # usage ./of-cli-uapi ACTION USERNAME PASSWORD
 
 ## Define this variables
 apiPort="9091"
-apiKey="debe0f12005dd2d782f7f2ca010c50ca9e0c9c53991582e12a76779bb2d37f8c"
+apiHost="localhost"
+apiKey="YOURAPIKEYHERE"
 
 ## Check given arguments
 if [ -z "$1" ]; then
@@ -40,13 +41,13 @@ fi
 
 ## functions
 function getUser {
-    apiUrl="https://localhost:$apiPort/plugins/restapi/v1/users/$apiUser"
+    apiUrl="https://$apiHost:$apiPort/plugins/restapi/v1/users/$apiUser"
     userExist=$(curl -ks -H "Authorization: $apiKey" -H "Accept: application/json" -H "Content-Type: application/json" -X GET "$apiUrl" | jq '.' | jq {username} | jq '.[] != null')
     echo $userExist
 }
 
 function addUser {
-    apiUrl="https://localhost:$apiPort/plugins/restapi/v1/users/"
+    apiUrl="https://$apiHost:$apiPort/plugins/restapi/v1/users/"
     apiPostData='{"username":"$apiUser","password":"$apiPass"}' #"email":"$"
     apiPostData=$(jq -n --arg u "$apiUser" --arg p "$apiPass" '{"username": $u, "password": $p}')
     userResult=$(curl -ks -H "Authorization: $apiKey" -H "Accept: application/json" -H "Content-Type: application/json" -d "$apiPostData" -X POST "$apiUrl")
@@ -54,7 +55,7 @@ function addUser {
 }
 
 function deleteUser {
-    apiUrl="https://localhost:$apiPort/plugins/restapi/v1/users/$apiUser"
+    apiUrl="https://$apiHost:$apiPort/plugins/restapi/v1/users/$apiUser"
     userResult=$(curl -ks -H "Authorization: $apiKey" -H "Accept: application/json" -H "Content-Type: application/json" -X DELETE "$apiUrl")
     echo userResult
 }
