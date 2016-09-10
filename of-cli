@@ -17,7 +17,7 @@ fi
 
 if [ "$action" = "start" ]
 then
-    (cd $pathOpenFire start)
+    ($pathOpenFire start)
 elif [ "$action" = "status" ]
 then
     ($pathOpenFire status)
