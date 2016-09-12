@@ -76,6 +76,7 @@ function addUser {
             echo "Done, user created"
         else
             echo "ERR: user already exists or wrong API key"
+            exit 1
         fi
     fi
 }
@@ -91,6 +92,7 @@ function deleteUser {
                 echo "Done, user deleted"
             else
                 echo "ERR: can't delete user or wrong API key"
+                exit 1
             fi
         fi
 }
