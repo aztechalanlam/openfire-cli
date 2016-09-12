@@ -72,7 +72,11 @@ function addUser {
     then
         echo "User already registered"
     else
-        echo "Done, also APIKEY maybe wrong"
+        if [ getUser ]; then
+            echo "Done, user created"
+        else
+            echo "ERR: user already exists or wrong API key"
+        fi
     fi
 }
 
@@ -83,7 +87,11 @@ function deleteUser {
         then
             echo "No user with this username. Didn't delete."
         else
-            echo "Done, also APIKEY maybe wrong"
+            if [ !getUser ]; then
+                echo "Done, user deleted"
+            else
+                echo "ERR: can't delete user or wrong API key"
+            fi
         fi
 }
 
