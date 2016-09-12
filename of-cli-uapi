@@ -70,7 +70,8 @@ function addUser {
     userResult=$(curl -sk -H "Authorization: $apiKey" -H "Accept: application/json" -H "Content-Type: application/json" -d "$apiPostData" -X POST "$apiUrl" | jq '.' | jq {exception} | jq '.[] == "UserAlreadyExistsException"')
     if [ "$userResult" = "true" ]
     then
-        echo "User already registered"
+        echo "ERR: user already registered"
+        exit 1
     else
         if [ getUser ]; then
             echo "Done, user created"
@@ -86,7 +87,8 @@ function deleteUser {
     userResult=$(curl -sk -H "Authorization: $apiKey" -H "Accept: application/json" -H "Content-Type: application/json" -X DELETE "$apiUrl" | jq '.' | jq {exception} | jq '.[] == "UserNotFoundException"')
     if [ "$userResult" = "true" ]
         then
-            echo "No user with this username. Didn't delete."
+            echo "ERR: no user with this username found. Didn't delete."
+            exit 1
         else
             if [ !getUser ]; then
                 echo "Done, user deleted"
