@@ -34,8 +34,8 @@ This scripts provide:
 * `of-cli status`
     * commands: start/status/stop/restart/force-reload
 * `of-cli-uapi get admin`
-    * usage: `of-cli-uapi ACTION USERNAME PASSWORD`
-    * actions: list/get/add/delete
+    * usage: `of-cli-uapi ACTION USERNAME (PASSWORD|GROUP|NAME)`
+    * actions: list/get/add/delete/update/addtogroup/deletefromgroup
 
 ## of-cli-uapi
 
@@ -61,6 +61,28 @@ This scripts provide:
 * `of-cli-uapi delete USERNAME`
     * e.g. `of-cli-uapi delete bobby`
 * delete user with provided username
+
+### add user to group
+
+* `of-cli-uapi addtogroup USERNAME GROUP`
+   * e.g. `of-cli-uapi addtogroup bobby thisgroup`
+* add user to group (maybe shared group). If group is 'shared', this user appears in other users rosters.
+  If GROUP is not exist, it will be created. If user was member of other group already, this GROUP is added to user groups list.
+
+### delete user from group
+
+* `of-cli-uapi deletefromgroup USERNAME GROUP`
+   * e.g. `of-cli-uapi deletefromgroup bobby thisgroup`
+* delete user from group. This action is reverse to 'addtogroup', it can be used when it was added to some group by mistake
+   or when it is necessary to delete user from shared roster.
+
+### update user name
+
+* `of-cli-uapi update USERNAME NAME`
+   * e.g. `of-cli-uapi update bobby McFarrell`
+* update user 'name' property. This property used by clients to show 'real user name' in roster instead his/her login (username).
+  For example, it can be surname, nick or similar.
+
 
 ## ToDo
 
