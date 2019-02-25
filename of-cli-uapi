@@ -11,6 +11,7 @@ apiPort="9091"
 apiHost="localhost"
 apiKey="YOURAPIKEYHERE"
 
+
 ## Internal vars
 
 ofUsage="command usage: ./of-cli-uapi ACTION USERNAME PASSWORD"
@@ -53,7 +54,7 @@ function getUser {
 
 function listUsers {
     apiUrl="https://$apiHost:$apiPort/plugins/restapi/v1/users/"
-    users=$(curl -sk -H "Authorization: $apiKey" -H "Accept: application/json" -H "Content-Type: application/json" -X GET "$apiUrl" | jq -r '.user' | jq -r '.[].username')
+    users=$(curl -sk -H "Authorization: $apiKey" -H "Accept: application/json" -H "Content-Type: application/json" -X GET "$apiUrl" | jq -r '.users' | jq -r '.[].username')
     if [ -z "$users" ]; then
         echo "ERR: wrong API AUTH KEY"
         exit 1
