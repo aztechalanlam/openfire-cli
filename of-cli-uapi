@@ -13,8 +13,8 @@ apiKey="YOURAPIKEYHERE"
 
 ## Internal vars
 
-ofUsage="command usage: ./of-cli-uapi ACTION USERNAME PASSWORD"
-ofActions="ACTIONS: list/get/add/delete"
+ofUsage="command usage: ./of-cli-uapi ACTION USERNAME (PASSWORD|GROUP|NAME)"
+ofActions="ACTIONS: list/get/add/delete/update/addtogroup/deletefromgroup; if group in addtogroup not exist it will be created"
 
 ## Check given arguments
 if [ -z "$1" ]; then
@@ -32,12 +32,32 @@ if [[ "$apiAction" != "list" && -z "$2" ]]; then
 else
     apiUser="$2"
 fi
-if [[ "$apiAction" = "add" && -z "$3" ]]; then
-    echo "ERR: no PASSWORD specified"
+if [[ "$apiAction" = "add" ]]; then
+    if [[ -z "$3" ]]; then
+	echo "ERR: no PASSWORD specified"
+	echo "$ofUsage"
+	exit 1
+    else
+	apiPass="$3"
+    fi
+fi
+
+if [[ "$apiAction" = "update" ]]; then
+    if [[ -z "$3" ]]; then
+	echo "ERR: no NAME specified"
+	echo "$ofUsage"
+	exit 1
+    else
+	apiName="$3"
+    fi
+fi
+
+if [[ ("$apiAction" = "addtogroup" ||"$apiAction" = "deletefromgroup")  && -z "$3" ]]; then
+    echo "ERR: no GROUP specified"
     echo "$ofUsage"
     exit 1
 else
-    apiPass="$3"
+    apiGroup="$3"
 fi
 
 ## curl help:
@@ -48,12 +68,17 @@ fi
 function getUser {
     apiUrl="https://$apiHost:$apiPort/plugins/restapi/v1/users/$apiUser"
     userExist=$(curl -sk -H "Authorization: $apiKey" -H "Accept: application/json" -H "Content-Type: application/json" -X GET "$apiUrl" | jq '.' | jq {username} | jq '.[] != null')
-    echo $userExist
+    if [[ $apiAction = "get" ]]; then echo $userExist; fi
+    if [[ "$userExist" = "true" ]]; then
+	return 0
+    else
+	return 1
+    fi
 }
 
 function listUsers {
     apiUrl="https://$apiHost:$apiPort/plugins/restapi/v1/users/"
-    users=$(curl -sk -H "Authorization: $apiKey" -H "Accept: application/json" -H "Content-Type: application/json" -X GET "$apiUrl" | jq -r '.user' | jq -r '.[].username')
+    users=$(curl -sk -H "Authorization: $apiKey" -H "Accept: application/json" -H "Content-Type: application/json" -X GET "$apiUrl" | jq -r '.users' | jq -r '.[].username')
     if [ -z "$users" ]; then
         echo "ERR: wrong API AUTH KEY"
         exit 1
@@ -99,6 +124,55 @@ function deleteUser {
         fi
 }
 
+function addUsertogroup {
+    if ! getUser; then
+        echo "ERR: user $apiUser not found or wrong API key"
+        exit 1
+    else
+	apiUrl="https://$apiHost:$apiPort/plugins/restapi/v1/users/$apiUser/groups/$apiGroup"
+	groupResult=$(curl -sk -H "Authorization: $apiKey" -H "Accept: application/json" -H "Content-Type: application/json" -X POST "$apiUrl" | jq '.' | jq {exception} | jq '.[] == "GroupNotFoundException"')
+	if [ "$groupResult" = "true" ]
+        then
+            echo "ERR: no such GROUP $apiGroup to add. Not added."
+            exit 1
+        else
+	    echo "Done, user added to group"
+        fi
+    fi
+}
+
+function deleteUserfromgroup {
+    if  ! getUser ; then
+        echo "ERR: user $apiUser not found or wrong API key"
+        exit 1
+    else
+	apiUrl="https://$apiHost:$apiPort/plugins/restapi/v1/users/$apiUser/groups/$apiGroup"
+	groupResult=$(curl -sk -H "Authorization: $apiKey" -H "Accept: application/json" -H "Content-Type: application/json" -X DELETE "$apiUrl" | jq '.' | jq {exception} | jq '.[] == "GroupNotFoundException"')
+	if [ "$groupResult" = "true" ]
+	    then
+	        echo "ERR: no such GROUP $apiGroup to delete from"
+	        exit 1
+        else
+                echo "Done, user deleted from group"
+        fi
+    fi
+}
+
+function updateUsername {
+	apiUrl="https://$apiHost:$apiPort/plugins/restapi/v1/users/$apiUser"
+	apiPostData=$(jq -n --arg u "$apiUser" --arg n "$apiName" '{"username": $u, "name": $n}')
+	userResult=$(curl -sk -H "Authorization: $apiKey" -H "Accept: application/json" -H "Content-Type: application/json" -d "$apiPostData" -X PUT "$apiUrl" | jq '.' | jq {exception} | jq '.[] == "UserNotFoundException"')
+	if [ "$userResult" = "true" ]
+	    then
+	        echo "ERR: no such USER $apiUser to update"
+	        exit 1
+        else
+                echo "Done, user name updated"
+        fi
+}
+
+
+
 ## get and execute action
 if [ "$apiAction" = "get" ]
 then
@@ -112,6 +186,15 @@ then
 elif [ "$apiAction" = "delete" ]
 then
     deleteUser
+elif [ "$apiAction" = "update" ]
+then
+    updateUsername
+elif [ "$apiAction" = "addtogroup" ]
+then
+    addUsertogroup
+elif [ "$apiAction" = "deletefromgroup" ]
+then
+    deleteUserfromgroup
 else
     echo "ERR: wrong ACTION"
     echo "$ofUsage"
