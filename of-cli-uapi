@@ -60,12 +60,12 @@ else
     apiGroup="$3"
 fi
 
-if [[ "$apiAction" = "addchatroom" && -z "$2" ]]; then
-    echo "ERR: no chat service specified"
-    echo "$ofUsage"
-    exit 1
-else
-    if [[ -z "$3" ]]; then
+if [ "$apiAction" = "addchatroom" ]; then
+    if [[ -z "$2" ]]; then
+        echo "ERR: no chat service specified"
+        echo "$ofUsage"
+        exit 1
+    elif [[ -z "$3" ]]; then
 				    echo "ERR: no chat room specified"
         echo "$ofUsage"
         exit 1
