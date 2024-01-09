@@ -60,6 +60,47 @@ else
     apiGroup="$3"
 fi
 
+if [[ "$apiAction" = "addchatroom" && -z "$2" ]]; then
+    echo "ERR: no chat service specified"
+    echo "$ofUsage"
+    exit 1
+else
+    if [[ -z "$3" ]]; then
+				    echo "ERR: no chat room specified"
+        echo "$ofUsage"
+        exit 1
+				elif [[ -z "$4" ]]; then
+				    echo "ERR: no chat room Name"
+        echo "$ofUsage"
+        exit 1
+				elif [[ -z "$5" ]]; then
+				    echo "ERR: no chat room description"
+        echo "$ofUsage"
+        exit 1
+				elif [[ -z "$6" ]]; then
+				    echo "ERR: no chat room topic"
+        echo "$ofUsage"
+        exit 1
+				elif [[ -z "$7" ]]; then
+				    echo "ERR: no group"
+        echo "$ofUsage"
+        exit 1
+				else
+				apiChatService="$2"
+				apiChatRoomID="$3"
+				apiChatRoomName="$4"
+				apiChatDesc="$5"
+				apiChatTopic="$6"
+				apiGroup="$7"
+				echo "apiChatService:$apiChatService"
+				echo "apiChatRoomID:$apiChatRoomID"
+				echo "apiChatRoomName:$apiChatRoomName"
+				echo "apiChatDesc:$apiChatDesc"
+				echo "apiChatTopic:$apiChatTopic"
+				echo "apiGroup:$apiGroup"
+				fi
+    
+fi
 ## curl help:
 # -k = --insecure = allow self-signed certificates
 # -s = --silent = hide curl output (table with speed, downloaded, etc)
@@ -70,8 +111,10 @@ function getUser {
     userExist=$(curl -sk -H "Authorization: $apiKey" -H "Accept: application/json" -H "Content-Type: application/json" -X GET "$apiUrl" | jq '.' | jq {username} | jq '.[] != null')
     if [[ $apiAction = "get" ]]; then echo $userExist; fi
     if [[ "$userExist" = "true" ]]; then
+	echo "OK"
 	return 0
     else
+	echo "FAIL"
 	return 1
     fi
 }
@@ -171,6 +214,23 @@ function updateUsername {
         fi
 }
 
+function addChatRoom {
+    apiUrl="https://$apiHost:$apiPort/plugins/restapi/v1/chatrooms?servicename=$apiChatService&sendInvitations=false"
+    apiPostData=$(jq -n --arg roomid "$apiChatRoomID" --arg roomname "$apiChatRoomName" --arg desc "$apiChatDesc" --arg group "$apiGroup" --arg t "$apiChatTopic" '{"roomName": $roomid, "description": $desc,"maxUsers": 500, "naturalName": $roomname,"subject": $t, "memberGroups": [ $group ], "persistent": true, "publicRoom": false, "registrationEnabled": false, "canAnyoneDiscoverJID": false, "canOccupantsChangeSubject": false, "membersOnly": true, "moderated": true,"allowPM": "none"}')
+    userResult=$(curl -sk -H "Authorization: $apiKey" -H "Accept: application/json" -H "Content-Type: application/json" -d "$apiPostData" -X POST "$apiUrl" | jq '.' | jq {exception} | jq '.[] == "UserAlreadyExistsException"')
+    if [ "$userResult" = "true" ]
+    then
+        echo "ERR: Group already registered"
+        exit 1
+    else
+        if [ getUser ]; then
+            echo "Done, Group created"
+        else
+            echo "ERR: user already exists or wrong API key"
+            exit 1
+        fi
+    fi
+}
 
 
 ## get and execute action
@@ -195,6 +255,9 @@ then
 elif [ "$apiAction" = "deletefromgroup" ]
 then
     deleteUserfromgroup
+elif [ "$apiAction" = "addchatroom" ]
+then
+    addChatRoom
 else
     echo "ERR: wrong ACTION"
     echo "$ofUsage"
